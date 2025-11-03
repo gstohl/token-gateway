@@ -63,7 +63,7 @@ const server = Bun.serve({
       const targetUrl = new URL(url.pathname + url.search, TARGET_URL);
 
       // Forward the request to the backend
-      const proxyReq = new Request(targetUrl, {
+      const proxyReq = new Request(targetUrl.toString(), {
         method: req.method,
         headers: req.headers,
         body: req.body,
