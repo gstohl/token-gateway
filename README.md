@@ -4,12 +4,14 @@ A lightweight authentication proxy built with Bun that protects your backend ser
 
 ## Features
 
-- **Simple Password Authentication**: Validates requests against a configurable list of passwords
-- **High Performance**: Built with Bun for blazing-fast request handling
-- **Flexible Authentication**: Supports both Bearer tokens and query parameters
-- **Production-Ready Routing**: Traefik handles load balancing and routing
-- **Docker Compose Setup**: Everything containerized and ready to deploy
-- **Health Checks**: Built-in health check endpoints for monitoring
+- **🔐 Web Login Page**: Beautiful dark-themed login page for browser-based authentication
+- **🍪 Session Management**: Cookie-based sessions for seamless browser access
+- **🔑 Dual Authentication**: Supports both web sessions and API Bearer tokens
+- **🎨 Smart Detection**: Automatically shows login page to browsers, JSON to APIs
+- **⚡ High Performance**: Built with Bun for blazing-fast request handling
+- **🚀 Production-Ready Routing**: Traefik handles load balancing and routing
+- **🐳 Docker Compose Setup**: Everything containerized and ready to deploy
+- **💚 Health Checks**: Built-in health check endpoints for monitoring
 
 ## Architecture
 
@@ -50,7 +52,10 @@ PORT=3000 node index.node.mjs
 cd auth-proxy
 VALID_PASSWORDS="supersecret,token123" TARGET_URL="http://localhost:3000" PORT=3001 node index.node.mjs
 
-# Terminal 3 - Test
+# Open in browser
+# Visit http://localhost:3001/ and login with password: supersecret
+
+# Or test with curl
 curl -H "Authorization: Bearer supersecret" http://localhost:3001/
 ```
 
@@ -117,14 +122,58 @@ curl -H "Authorization: Bearer supersecret" http://localhost/api/data
 
 ### Auth Proxy (Port 3001)
 - Validates authentication tokens/passwords
+- Serves dark-themed web login page for browsers
+- Cookie-based session management (24-hour expiration)
 - Proxies authenticated requests to backend
-- Returns 401 for invalid/missing credentials
 - Built with Bun for maximum performance
 
 ### Backend (Port 3000)
 - Protected service that requires authentication
 - Only accessible through auth-proxy
 - Sample API with multiple endpoints
+
+## Web Login Page
+
+The auth proxy includes a beautiful dark-themed login page that automatically appears when you access the proxy from a browser.
+
+### How It Works
+
+1. **Browser Detection**: The proxy detects browser requests (via `Accept: text/html` header)
+2. **Login Page**: Shows a dark-themed login form if not authenticated
+3. **Session Creation**: Valid passwords create a secure HTTP-only session cookie
+4. **Auto-Redirect**: After login, you're redirected to your original destination
+5. **Session Duration**: Sessions last 24 hours, then require re-authentication
+
+### Usage
+
+**In a Browser:**
+```bash
+# Visit the proxy URL
+open http://localhost:3001/
+
+# Enter one of the valid passwords (e.g., "supersecret")
+# You'll be authenticated and can access all protected resources
+```
+
+**Logout:**
+```bash
+# Visit the logout endpoint
+http://localhost:3001/auth/logout
+```
+
+**Direct Login Page:**
+```bash
+# Access the login page directly
+http://localhost:3001/auth/login
+```
+
+### API Access (No Browser)
+
+API clients can still use Bearer tokens without needing the web interface:
+
+```bash
+curl -H "Authorization: Bearer supersecret" http://localhost:3001/api/data
+```
 
 ## API Endpoints
 
