@@ -30,6 +30,32 @@ All requests go through Traefik, which routes them to the auth proxy. The auth p
 
 ## Quick Start
 
+### Option 1: Local Testing (Without Docker)
+
+Test the auth proxy locally using Node.js:
+
+```bash
+# Run the automated test suite
+./test-local.sh
+```
+
+Or manually start the services:
+
+```bash
+# Terminal 1 - Start backend
+cd backend
+PORT=3000 node index.node.mjs
+
+# Terminal 2 - Start auth proxy
+cd auth-proxy
+VALID_PASSWORDS="supersecret,token123" TARGET_URL="http://localhost:3000" PORT=3001 node index.node.mjs
+
+# Terminal 3 - Test
+curl -H "Authorization: Bearer supersecret" http://localhost:3001/
+```
+
+### Option 2: Docker Compose (Production)
+
 ### 1. Clone and Setup
 
 ```bash
