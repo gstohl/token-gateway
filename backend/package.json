@@ -1,0 +1,14 @@
+{
+  "name": "backend-service",
+  "version": "1.0.0",
+  "description": "Sample backend service protected by auth proxy",
+  "main": "index.ts",
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}

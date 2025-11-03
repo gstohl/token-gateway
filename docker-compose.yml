@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Traefik reverse proxy
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      # Enable Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+
+      # Configure entry points
+      - "--entrypoints.web.address=:80"
+
+      # Enable Traefik dashboard (optional)
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+
+      # Logging
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"      # HTTP
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - gateway
+    restart: unless-stopped
+
+  # Auth Proxy - validates passwords before forwarding to backend
+  auth-proxy:
+    build:
+      context: ./auth-proxy
+      dockerfile: Dockerfile
+    container_name: auth-proxy
+    environment:
+      - VALID_PASSWORDS=${VALID_PASSWORDS}
+      - TARGET_URL=http://backend:3000
+      - PORT=3001
+    networks:
+      - gateway
+    labels:
+      - "traefik.enable=true"
+
+      # Route all /api/* requests through auth proxy
+      - "traefik.http.routers.auth-proxy.rule=PathPrefix(`/api`) || Path(`/`)"
+      - "traefik.http.routers.auth-proxy.entrypoints=web"
+      - "traefik.http.services.auth-proxy.loadbalancer.server.port=3001"
+
+      # Health check endpoint
+      - "traefik.http.routers.auth-proxy-health.rule=Path(`/health`)"
+      - "traefik.http.routers.auth-proxy-health.entrypoints=web"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Backend service (protected by auth proxy)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    environment:
+      - PORT=3000
+    networks:
+      - gateway
+    # Backend is NOT exposed to Traefik directly
+    # All traffic must go through auth-proxy
+    labels:
+      - "traefik.enable=false"
+    restart: unless-stopped
+
+networks:
+  gateway:
+    driver: bridge

@@ -1,0 +1,14 @@
+{
+  "name": "auth-proxy",
+  "version": "1.0.0",
+  "description": "Simple authentication proxy built with Bun",
+  "main": "index.ts",
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}
